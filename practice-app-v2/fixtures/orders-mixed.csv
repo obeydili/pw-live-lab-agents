@@ -1,0 +1,5 @@
+symbol,side,quantity,limitPrice
+CRSP,Buy,40,100.25
+DLTA,Sell,75,26.10
+ACME,Buy,0,41.00
+ZZZZ,Sell,10,5.00

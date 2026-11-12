@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market quote · Trade Desk Lite</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-page="widget-quote" class="widget">
+  <h2>Market quote</h2>
+  <p id="widget-empty" hidden>Choose a symbol to see a quote.</p>
+  <p id="widget-error" class="error" role="alert" hidden></p>
+  <div id="widget-quote" hidden>
+    <p class="widget-symbol" data-testid="quote-symbol"></p>
+    <dl class="details">
+      <dt>Last</dt><dd><span data-testid="last-price"></span></dd>
+      <dt>Bid</dt><dd><span data-testid="bid-price"></span></dd>
+      <dt>Ask</dt><dd><span data-testid="ask-price"></span></dd>
+    </dl>
+    <button type="button" id="use-last-price">Use last price</button>
+  </div>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "practice-app-v2",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Practice-App-v2: Trade Desk Lite grown for Playwright live-coding practice.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "start:dev": "PORT=3100 node server.js",
+    "start:qa": "PORT=3200 node server.js",
+    "test": "node --test \"tests/**/*.test.js\""
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Approvals · Trade Desk Lite</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-page="approvals">
+  <header class="topbar">
+    <a class="brand" href="/orders">Trade Desk Lite</a>
+    <nav aria-label="Main">
+      <a href="/orders">Orders</a>
+      <a href="/orders/new" data-role="trader">New order</a>
+      <a href="/approvals" data-role="approver">Approvals</a>
+      <a href="/orders/import" data-role="trader">Import orders</a>
+      <a href="/watchlist">Watchlist</a>
+    </nav>
+    <div class="user">
+      <span id="current-user" data-testid="current-user"></span>
+      <button type="button" id="sign-out" class="link">Sign out</button>
+    </div>
+  </header>
+  <main class="card">
+    <h1>Approvals</h1>
+    <p id="flash" role="status" class="flash" hidden></p>
+    <div id="approvals-error" class="error-box" role="alert" hidden>
+      <p>Could not load approvals.</p>
+      <button type="button" id="approvals-retry">Retry</button>
+    </div>
+    <div class="spinner" role="progressbar" aria-label="Loading approvals" data-testid="loading-spinner" hidden></div>
+    <table>
+      <caption>Orders waiting for approval</caption>
+      <thead>
+        <tr><th scope="col">Order ID</th><th scope="col">Symbol</th><th scope="col">Side</th><th scope="col">Quantity</th><th scope="col">Limit price</th><th scope="col">Created by</th><th scope="col"><span class="visually-hidden">Decision</span></th></tr>
+      </thead>
+      <tbody id="approvals-body"></tbody>
+    </table>
+    <p id="approvals-empty" hidden>No orders waiting for approval.</p>
+  </main>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

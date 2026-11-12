@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Not allowed · Trade Desk Lite</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-page="forbidden">
+  <header class="topbar">
+    <a class="brand" href="/orders">Trade Desk Lite</a>
+    <nav aria-label="Main">
+      <a href="/orders">Orders</a>
+      <a href="/orders/new" data-role="trader">New order</a>
+      <a href="/approvals" data-role="approver">Approvals</a>
+      <a href="/orders/import" data-role="trader">Import orders</a>
+      <a href="/watchlist">Watchlist</a>
+    </nav>
+    <div class="user">
+      <span id="current-user" data-testid="current-user"></span>
+      <button type="button" id="sign-out" class="link">Sign out</button>
+    </div>
+  </header>
+  <main class="card narrow">
+    <h1>Not allowed</h1>
+    <p>Your role cannot open this page.</p>
+    <a href="/orders">Back to orders</a>
+  </main>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

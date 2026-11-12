@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order details · Trade Desk Lite</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-page="order-details">
+  <header class="topbar">
+    <a class="brand" href="/orders">Trade Desk Lite</a>
+    <nav aria-label="Main">
+      <a href="/orders">Orders</a>
+      <a href="/orders/new" data-role="trader">New order</a>
+      <a href="/approvals" data-role="approver">Approvals</a>
+      <a href="/orders/import" data-role="trader">Import orders</a>
+      <a href="/watchlist">Watchlist</a>
+    </nav>
+    <div class="user">
+      <span id="current-user" data-testid="current-user"></span>
+      <button type="button" id="sign-out" class="link">Sign out</button>
+    </div>
+  </header>
+  <main class="card narrow">
+    <p id="flash" role="status" class="flash" hidden></p>
+    <h1 id="order-heading">Order</h1>
+    <div class="spinner" role="progressbar" aria-label="Loading order" data-testid="loading-spinner" hidden></div>
+    <dl class="details">
+      <dt>Symbol</dt><dd data-field="symbol"></dd>
+      <dt>Side</dt><dd data-field="side"></dd>
+      <dt>Quantity</dt><dd data-field="quantity"></dd>
+      <dt>Limit price</dt><dd data-field="limitPrice"></dd>
+      <dt>Status</dt><dd><span class="badge" data-testid="order-status" data-field="status"></span></dd>
+      <dt>Created by</dt><dd data-field="createdBy"></dd>
+      <dt>Decided by</dt><dd data-field="decidedBy"></dd>
+      <dt>Execution</dt><dd><span data-testid="execution-status" data-field="executionStatus"></span></dd>
+      <dt>Filled at</dt><dd data-field="filledAt"></dd>
+      <dt>Time in force</dt><dd data-field="timeInForce"></dd>
+      <dt>Good till date</dt><dd data-field="goodTillDate"></dd>
+      <dt>Urgent</dt><dd data-field="urgent"></dd>
+      <dt>Notes</dt><dd data-field="notes"></dd>
+      <dt>Rejection reason</dt><dd data-field="rejectionReason"></dd>
+    </dl>
+    <div id="order-actions" class="actions" hidden></div>
+    <p><a id="open-quote" href="/orders" target="_blank" rel="noopener" hidden>Open quote</a></p>
+    <p id="order-error" class="error" role="alert" hidden></p>
+    <a href="/orders">Back to orders</a>
+  </main>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

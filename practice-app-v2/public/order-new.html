@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New order · Trade Desk Lite</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-page="order-new">
+  <header class="topbar">
+    <a class="brand" href="/orders">Trade Desk Lite</a>
+    <nav aria-label="Main">
+      <a href="/orders">Orders</a>
+      <a href="/orders/new" data-role="trader">New order</a>
+      <a href="/approvals" data-role="approver">Approvals</a>
+      <a href="/orders/import" data-role="trader">Import orders</a>
+      <a href="/watchlist">Watchlist</a>
+    </nav>
+    <div class="user">
+      <span id="current-user" data-testid="current-user"></span>
+      <button type="button" id="sign-out" class="link">Sign out</button>
+    </div>
+  </header>
+  <main class="card narrow">
+    <h1>Order ticket</h1>
+    <form id="order-form" novalidate>
+      <label for="symbol">Symbol</label>
+      <select id="symbol" name="symbol" required>
+        <option value="">Choose a symbol</option>
+      </select>
+      <fieldset>
+        <legend>Side</legend>
+        <label class="inline"><input type="radio" name="side" value="Buy"> Buy</label>
+        <label class="inline"><input type="radio" name="side" value="Sell"> Sell</label>
+      </fieldset>
+      <label for="quantity">Quantity</label>
+      <input id="quantity" name="quantity" type="number" min="1" step="1" inputmode="numeric" aria-describedby="quantity-help" required>
+      <p id="quantity-help" class="help">Whole shares, 1 to 1,000,000.</p>
+      <div class="label-row">
+        <label for="limitPrice">Limit price</label>
+        <button type="button" class="info" aria-describedby="limit-price-tip"><span aria-hidden="true">?</span><span class="visually-hidden">About limit price</span></button>
+        <div id="limit-price-tip" role="tooltip" hidden>The highest price you will pay to buy, or the lowest you will accept to sell.</div>
+      </div>
+      <input id="limitPrice" name="limitPrice" type="number" min="0.01" step="0.01" inputmode="decimal" aria-describedby="price-help" required>
+      <p id="price-help" class="help">Greater than 0, at most 2 decimals.</p>
+      <label for="timeInForce">Time in force</label>
+      <select id="timeInForce" name="timeInForce">
+        <option value="Day" selected>Day</option>
+        <option value="GTC">Good till cancelled</option>
+        <option value="GTD">Good till date</option>
+      </select>
+      <div id="good-till-date-field" hidden>
+        <label for="goodTillDate">Good till date</label>
+        <input type="date" id="goodTillDate" name="goodTillDate">
+      </div>
+      <label class="inline"><input type="checkbox" id="urgent" name="urgent"> Mark as urgent</label>
+      <label for="notes">Notes (optional)</label>
+      <textarea id="notes" name="notes" maxlength="200" rows="3"></textarea>
+      <p data-testid="notes-counter" class="help">0 / 200</p>
+      <p id="order-error" class="error" role="alert" hidden></p>
+      <div class="actions">
+        <button type="submit" id="submit-order" disabled>Submit order</button>
+        <a href="/orders">Cancel</a>
+      </div>
+    </form>
+    <iframe id="quote-frame" title="Market quote" src="/widgets/quote"></iframe>
+  </main>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

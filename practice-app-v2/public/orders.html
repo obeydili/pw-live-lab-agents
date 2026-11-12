@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orders · Trade Desk Lite</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-page="orders">
+  <header class="topbar">
+    <a class="brand" href="/orders">Trade Desk Lite</a>
+    <nav aria-label="Main">
+      <a href="/orders">Orders</a>
+      <a href="/orders/new" data-role="trader">New order</a>
+      <a href="/approvals" data-role="approver">Approvals</a>
+      <a href="/orders/import" data-role="trader">Import orders</a>
+      <a href="/watchlist">Watchlist</a>
+    </nav>
+    <div class="user">
+      <span id="current-user" data-testid="current-user"></span>
+      <button type="button" id="sign-out" class="link">Sign out</button>
+    </div>
+  </header>
+  <main class="card">
+    <div class="heading-row">
+      <h1>Orders</h1>
+      <div class="heading-actions">
+        <a id="export-csv" href="/api/orders/export.csv?sort=-createdAt" download>Export CSV</a>
+        <a class="button" href="/orders/new" data-role="trader">New order</a>
+      </div>
+    </div>
+    <p id="flash" role="status" class="flash" hidden></p>
+    <p class="help" data-testid="shortcuts-help">Shortcuts: <kbd>/</kbd> search orders · <kbd>Esc</kbd> clear the search · <kbd>Alt</kbd>+<kbd>N</kbd> new order (traders)</p>
+    <form role="search" aria-label="Filter orders" id="orders-filters" class="filters">
+      <div>
+        <label for="filter-status">Status</label>
+        <select id="filter-status" name="status">
+          <option value="">All statuses</option>
+          <option value="Pending Approval">Pending Approval</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </div>
+      <div>
+        <label for="filter-symbol">Symbol</label>
+        <select id="filter-symbol" name="symbol">
+          <option value="">All symbols</option>
+        </select>
+      </div>
+      <div class="grow">
+        <label for="filter-q">Search orders</label>
+        <input id="filter-q" name="q" type="search" placeholder="Order ID, symbol or client ID" autocomplete="off">
+      </div>
+      <button type="button" id="clear-filters" class="plain">Clear filters</button>
+    </form>
+    <div id="orders-error" class="error-box" role="alert" hidden>
+      <p>Could not load orders.</p>
+      <button type="button" id="orders-retry">Retry</button>
+    </div>
+    <div class="spinner" role="progressbar" aria-label="Loading orders" data-testid="loading-spinner" hidden></div>
+    <table>
+      <caption>All orders, newest first</caption>
+      <thead>
+        <tr>
+          <th scope="col" aria-sort="none" data-sort="id"><button type="button" class="sort">Order ID</button></th>
+          <th scope="col" aria-sort="none" data-sort="symbol"><button type="button" class="sort">Symbol</button></th>
+          <th scope="col">Side</th>
+          <th scope="col" aria-sort="none" data-sort="quantity"><button type="button" class="sort">Quantity</button></th>
+          <th scope="col" aria-sort="none" data-sort="limitPrice"><button type="button" class="sort">Limit price</button></th>
+          <th scope="col">Status</th>
+          <th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody id="orders-body"></tbody>
+    </table>
+    <p id="orders-empty" hidden>No orders yet.</p>
+    <p id="orders-no-match" hidden>No orders match your filters.</p>
+    <nav aria-label="Pagination" class="pagination">
+      <button type="button" id="prev-page" class="plain">Previous page</button>
+      <span data-testid="page-info">Page 1 of 1</span>
+      <button type="button" id="next-page" class="plain">Next page</button>
+      <span class="page-size">
+        <label for="page-size" class="inline-label">Rows per page</label>
+        <select id="page-size">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+        </select>
+      </span>
+      <span data-testid="results-count" class="muted"></span>
+    </nav>
+  </main>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

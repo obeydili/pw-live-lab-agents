@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Import orders · Trade Desk Lite</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-page="orders-import">
+  <header class="topbar">
+    <a class="brand" href="/orders">Trade Desk Lite</a>
+    <nav aria-label="Main">
+      <a href="/orders">Orders</a>
+      <a href="/orders/new" data-role="trader">New order</a>
+      <a href="/approvals" data-role="approver">Approvals</a>
+      <a href="/orders/import" data-role="trader">Import orders</a>
+      <a href="/watchlist">Watchlist</a>
+    </nav>
+    <div class="user">
+      <span id="current-user" data-testid="current-user"></span>
+      <button type="button" id="sign-out" class="link">Sign out</button>
+    </div>
+  </header>
+  <main class="card narrow">
+    <h1>Import orders</h1>
+    <p class="help">A CSV with the header <code>symbol,side,quantity,limitPrice</code> (optionally <code>,clientOrderId</code>), up to 100 rows.</p>
+    <form id="import-form" novalidate>
+      <label for="csv-file">Orders CSV file</label>
+      <input type="file" id="csv-file" name="csvFile" accept=".csv,text/csv">
+      <p data-testid="selected-file" class="help">No file chosen</p>
+      <p id="import-error" class="error" role="alert" hidden></p>
+      <div class="actions">
+        <button type="submit" id="upload">Upload</button>
+      </div>
+    </form>
+    <section id="import-results" hidden>
+      <p data-testid="import-summary" class="import-summary"></p>
+      <table>
+        <caption>Import results</caption>
+        <thead>
+          <tr><th scope="col">Line</th><th scope="col">Result</th></tr>
+        </thead>
+        <tbody id="import-body"></tbody>
+      </table>
+    </section>
+  </main>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

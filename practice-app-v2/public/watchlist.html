@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Watchlist · Trade Desk Lite</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-page="watchlist">
+  <header class="topbar">
+    <a class="brand" href="/orders">Trade Desk Lite</a>
+    <nav aria-label="Main">
+      <a href="/orders">Orders</a>
+      <a href="/orders/new" data-role="trader">New order</a>
+      <a href="/approvals" data-role="approver">Approvals</a>
+      <a href="/orders/import" data-role="trader">Import orders</a>
+      <a href="/watchlist">Watchlist</a>
+    </nav>
+    <div class="user">
+      <span id="current-user" data-testid="current-user"></span>
+      <button type="button" id="sign-out" class="link">Sign out</button>
+    </div>
+  </header>
+  <main class="card">
+    <h1>Watchlist</h1>
+    <p class="help">Drag symbols between the lists (or reorder your watchlist), or use the Add and Remove buttons. Every change is saved.</p>
+    <div class="watchlist">
+      <section>
+        <h2 id="available-heading">Available symbols</h2>
+        <ul aria-label="Available symbols" class="symbol-list" data-list="available"></ul>
+      </section>
+      <section>
+        <h2 id="watchlist-heading">My watchlist</h2>
+        <ul aria-label="My watchlist" class="symbol-list" data-list="watchlist"></ul>
+      </section>
+    </div>
+  </main>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
