@@ -1,4 +1,7 @@
 import { request, expect } from '@playwright/test';
+import type { APIResponse } from '@playwright/test';
+import { readJson } from '../../../helpers/readJson';
+import type { LoginResponse, CreateOrderRequest, Order, ResetResponse } from '../../../types/order';
 
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:3300';
 
@@ -9,25 +12,26 @@ async function main() {
   });
 
   try {
-    const response1 = await apiContext.post('/api/test/reset');
+    const response1: APIResponse = await apiContext.post('/api/test/reset');
     expect(response1.status()).toBe(200);
 
-    const response2 = await apiContext.get('/api/me');
+    const response2: APIResponse = await apiContext.get('/api/me');
     expect(response2.status()).toBe(401);
 
-    const response3 = await apiContext.post('/api/auth/login', {
+    const response3: APIResponse = await apiContext.post('/api/auth/login', {
       data: { username: 'trader1', password: 'Password123!' },
     });
-    const jsonResponse3 = await response3.json();
-    const token = jsonResponse3.token;
-    const Data = {
+    
+    const { token } = await readJson<LoginResponse>(response3);
+    
+    const Data: CreateOrderRequest = {
       symbol: 'ACME',
       side: 'Buy',
       quantity: 10,
       limitPrice: 12.5,
     };
 
-    const response4 = await apiContext.post('/api/orders', {
+    const response4:APIResponse = await apiContext.post('/api/orders', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -35,24 +39,26 @@ async function main() {
     });
 
     expect(response4.status()).toBe(201);
-    const jsonResponse4 = await response4.json();
-    expect(jsonResponse4.status).toBe('Pending Approval');
-    const orderId = jsonResponse4.id;
+    //const jsonResponse4: Order = await response4.json();
+    //const orderId = jsonResponse4.id;
+    const { id: orderId, status: statusResponse4 } = await readJson<Order>(response4)
+    expect(statusResponse4).toBe('Pending Approval');
+    
 
-    const response5 = await apiContext.get(`/api/orders/${orderId}`, {
+    const response5:APIResponse = await apiContext.get(`/api/orders/${orderId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
-    const jsonResponse5 = await response5.json();
+    const jsonResponse5 = await readJson<Order>(response5);
     expect(jsonResponse5.symbol).toBe(Data.symbol);
     expect(jsonResponse5.side).toBe(Data.side);
     expect(jsonResponse5.quantity).toBe(Data.quantity);
     expect(jsonResponse5.limitPrice).toBe(Data.limitPrice);
     // expect(jsonResponse5).toMatchObject(Data);
 
-    const response6 = await apiContext.get(`/api/orders/ORD-9999`, {
+    const response6: APIResponse = await apiContext.get(`/api/orders/ORD-9999`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

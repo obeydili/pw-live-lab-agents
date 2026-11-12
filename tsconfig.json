@@ -9,5 +9,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["challenges/**/**/*.ts", "tests/**/*.ts", "playwright.config.ts"]
+  "include": ["helpers/**/*.ts","tests/**/*.ts", "playwright.config.ts", "types/**/*.ts", "pages/**/*.ts", "fixtures/**/*.ts", "orders/**/*.ts", "scripts/**/*.ts", "data/**/*.ts"]
 }

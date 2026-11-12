@@ -2,8 +2,15 @@
   "name": "pw-live-lab-framework",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "challenge": "tsx",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test-alone": "playwright test --workers=1",
+    "ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
