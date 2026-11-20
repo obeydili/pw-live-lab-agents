@@ -1,0 +1,101 @@
+{
+  "schema": "orchestration/v1",
+  "id": "QA-01",
+  "type": "qa",
+  "title": "Make the hybrid orders spec parallel-safe and tidy the repo basics",
+  "stage": "done",
+  "waiting": "omer",
+  "working": false,
+  "blocked": null,
+  "verdict": "go",
+  "openBugs": [],
+  "rev": 8,
+  "createdAt": "2026-11-12T13:41:44.000Z",
+  "updatedAt": "2026-11-20T07:34:05.689Z",
+  "gates": {
+    "plan": {
+      "approved": true,
+      "by": "omer",
+      "at": "2026-11-20T06:34:00.220Z",
+      "note": "Plan approved"
+    },
+    "go_no_go": {
+      "approved": true,
+      "by": "omer",
+      "at": "2026-11-20T07:34:05.689Z"
+    }
+  },
+  "history": [
+    {
+      "at": "2026-11-12T13:41:44.000Z",
+      "role": "system",
+      "action": "filed",
+      "stage": "filed",
+      "summary": "Ticket filed."
+    },
+    {
+      "at": "2026-11-20T06:11:16.108Z",
+      "role": "omer",
+      "action": "moved",
+      "stage": "sdet_plan",
+      "summary": "Started by Omer."
+    },
+    {
+      "at": "2026-11-20T06:15:13.965Z",
+      "role": "sdet",
+      "action": "done",
+      "stage": "sdet_plan",
+      "summary": "PLAN.md written, no code changed yet. Baseline: hybrid spec failed 7 of 30 parallel runs (5x 409 from Date.now() ids, 2x ERR_ABORTED from the login race). Two questions for you: untrack the .DS_Store files, and rename the DEV02 id prefix.",
+      "reportFile": "work/qa/QA-01/PLAN.md"
+    },
+    {
+      "at": "2026-11-20T06:34:00.220Z",
+      "role": "omer",
+      "action": "approved",
+      "stage": "sdet_plan",
+      "summary": "Plan approved"
+    },
+    {
+      "at": "2026-11-20T06:34:30.408Z",
+      "role": "sdet",
+      "action": "done",
+      "stage": "sdet",
+      "summary": "Hybrid spec: 7 of 30 parallel runs failed before, 130 of 130 pass now (unique ids, login waits for /orders, reload). typecheck clean, test-alone 54/54, npm test 54/54, x3 162/162. me() message, .gitignore, .DS_Store done.",
+      "reportFile": "work/qa/QA-01/SDET-NOTES.md"
+    },
+    {
+      "at": "2026-11-20T06:41:46.743Z",
+      "role": "reviewer",
+      "action": "done",
+      "stage": "review",
+      "summary": "QA-01 fixes verified: hybrid 100/100, parallel 54/54, full repeat 162/162, app 76/76; typecheck passed. No-Go: serial 53 passed, 1 failed on DEV-02 created-event timestamp mismatch. BUG-1 filed for Developer.",
+      "reportFile": "work/qa/QA-01/REVIEW.md",
+      "verdict": "no-go"
+    },
+    {
+      "at": "2026-11-20T07:05:39.375Z",
+      "role": "omer",
+      "action": "changes_requested",
+      "stage": "review",
+      "summary": "Waiting for the blocker 'Bug TIcket' to be done.",
+      "verdict": "no-go"
+    },
+    {
+      "at": "2026-11-20T07:32:16.564Z",
+      "role": "reviewer",
+      "action": "done",
+      "stage": "review",
+      "summary": "Go: QA-01 fixes and BUG-1 verified. Typecheck passed; serial 54/54, parallel 54/54, full repeat 162/162, focused repeat 150/150 (100 hybrid + 50 DEV-02 TC06), app 77/77. No blockers remain.",
+      "reportFile": "work/qa/QA-01/REVIEW.md",
+      "verdict": "go"
+    },
+    {
+      "at": "2026-11-20T07:34:05.689Z",
+      "role": "omer",
+      "action": "approved",
+      "stage": "review",
+      "summary": "",
+      "verdict": "go"
+    }
+  ]
+}

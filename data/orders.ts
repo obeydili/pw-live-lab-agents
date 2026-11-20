@@ -3,7 +3,7 @@ import type { CreateOrderRequest } from '../types/order';
 
 export type SourceProfile = 'default' | 'full' | 'gtc';
 
-export function uniqueClientOrderId(prefix = 'DEV02'): string {
+export function uniqueClientOrderId(prefix = 'TEST'): string {
   return `${prefix}-${randomUUID().slice(0, 8)}`;
 }
 

@@ -63,7 +63,7 @@ export class ApiClient {
       headers: this.getHeaders(),
     });
     if (!res.ok()) {
-      throw new Error(`Failed to get order: ${res.status()} ${res.statusText()}`);
+      throw new Error(`Failed to get current user: ${res.status()} ${res.statusText()}`);
     }
     return await readJson<UserInfo>(res);
   }

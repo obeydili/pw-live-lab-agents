@@ -8,3 +8,11 @@ node_modules/
 /.env
 
 
+
+# Secrets and local state
+.env.*
+!.env.example
+.auth/
+
+# macOS
+.DS_Store

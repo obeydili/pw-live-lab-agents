@@ -15,5 +15,6 @@ export class LoginPage {
     await this.usernameInput.fill(user);
     await this.passwordInput.fill(pass);
     await this.signInButton.click();
+    await this.page.waitForURL('/orders');
   }
 }

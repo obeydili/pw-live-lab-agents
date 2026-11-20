@@ -13,8 +13,8 @@ export class OrdersPage {
     this.cells = this.page.getByRole('cell');
   }
 
-  async navigate(url: string): Promise<void> {
-    await this.page.goto(url);
+  async reload(): Promise<void> {
+    await this.page.reload();
   }
 
   filterRowsByText(text: string): Locator {
