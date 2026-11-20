@@ -4,7 +4,7 @@ import { OrdersPage } from '../../pages/orders.page';
 
 test(
   'trader can create order via API and see it in UI',
-  { tag: '@hybrid' },
+  { tag: ['@hybrid', '@smoke'] },
   async ({ apiClient, traderPage, ordersPage }) => {
     const order = await apiClient.createOrder(buildOrder({ quantity: 300, limitPrice: 20 }));
     await ordersPage.reload();
@@ -15,7 +15,7 @@ test(
 
 test(
   'trader2 can create order via API and see it in UI',
-  { tag: '@trader2' },
+  { tag: ['@hybrid', '@regression'] },
   async ({ trader2ApiClient, trader2Page }) => {
     const orders = new OrdersPage(trader2Page);
     const order = await trader2ApiClient.createOrder(buildOrder({ quantity: 300, limitPrice: 20 }));

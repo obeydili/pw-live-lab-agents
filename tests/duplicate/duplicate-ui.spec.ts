@@ -58,7 +58,7 @@ test.describe('Duplicate order UI', () => {
 
           await details.open(source.id);
 
-          await expect(details.duplicateButton, 'a trader can duplicate any order').toBeVisible();
+          await expect(details.duplicateButton, 'a trader can duplicate an order in every status').toBeVisible();
           await expect(details.duplicateButton).toBeEnabled();
           await expect(page.getByTestId('duplicate-order')).toHaveCount(1);
           if (status === 'Pending Approval' && owner === 'own') {

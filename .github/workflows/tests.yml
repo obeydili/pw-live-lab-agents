@@ -1,0 +1,79 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BASE_URL: http://localhost:3300
+      # The practice users are public (practice-app-v2/README.md). Only the passwords come from repository secrets.
+      TRADER1_USERNAME: trader1
+      TRADER1_PASSWORD: ${{ secrets.TRADER1_PASSWORD }}
+      TRADER2_USERNAME: trader2
+      TRADER2_PASSWORD: ${{ secrets.TRADER2_PASSWORD }}
+      APPROVER1_USERNAME: approver1
+      APPROVER1_PASSWORD: ${{ secrets.APPROVER1_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            practice-app-v2/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm ci --prefix practice-app-v2
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start Practice-App-v2 and wait for it
+        run: |
+          PORT=3300 nohup npm --prefix practice-app-v2 start > app.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://localhost:3300/api/health; then exit 0; fi
+            sleep 1
+          done
+          echo "Practice-App-v2 did not come up on :3300"
+          cat app.log
+          exit 1
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: App tests
+        run: npm --prefix practice-app-v2 test
+
+      - name: Playwright tests
+        run: npx playwright test
+
+      - name: Upload HTML report and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+            app.log
+          if-no-files-found: ignore
+          retention-days: 14
