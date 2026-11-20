@@ -1,0 +1,38 @@
+{
+  "schema": "orchestration/v1",
+  "id": "DEV-03",
+  "type": "dev",
+  "title": "Order stats endpoint",
+  "stage": "test_plan",
+  "waiting": "agent",
+  "working": false,
+  "blocked": null,
+  "verdict": null,
+  "openBugs": [],
+  "rev": 1,
+  "createdAt": "2026-11-12T16:25:48.538Z",
+  "updatedAt": "2026-11-12T16:46:32.239Z",
+  "gates": {
+    "move_to_qa": {
+      "approved": true,
+      "by": "omer",
+      "at": "2026-11-12T16:46:32.239Z"
+    }
+  },
+  "history": [
+    {
+      "at": "2026-11-12T16:25:48.538Z",
+      "role": "system",
+      "action": "filed",
+      "stage": "filed",
+      "summary": "Ticket filed."
+    },
+    {
+      "at": "2026-11-12T16:46:32.239Z",
+      "role": "omer",
+      "action": "moved",
+      "stage": "test_plan",
+      "summary": "Sent to QA (built by the Developer outside the board)."
+    }
+  ]
+}

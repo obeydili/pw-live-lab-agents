@@ -1,0 +1,57 @@
+{
+  "schema": "orchestration/v1",
+  "id": "DEV-01",
+  "type": "dev",
+  "title": "Order activity history",
+  "stage": "test_plan",
+  "waiting": "omer",
+  "working": false,
+  "blocked": {
+    "question": "Drafted 30 case rows; typecheck passed, tests not run, DEV-02 integration deferred. Can you resolve TEST-PLAN Q1-Q3: cancellation recording proof, missing exact error/UI contracts, and deterministic equal-timestamp ordering coverage?",
+    "at": "2026-11-12T16:55:26.643Z"
+  },
+  "verdict": null,
+  "openBugs": [],
+  "rev": 3,
+  "createdAt": "2026-11-12T13:42:03.000Z",
+  "updatedAt": "2026-11-12T16:55:26.643Z",
+  "gates": {
+    "move_to_qa": {
+      "approved": true,
+      "by": "omer",
+      "at": "2026-11-12T16:37:08.652Z",
+      "note": "Built by the Developer (Claude). PLAN.md, FEATURE-SPEC.md and DEV-NOTES.md are in the ticket folder; practice-app-v2 tests 73/73."
+    }
+  },
+  "history": [
+    {
+      "at": "2026-11-12T13:42:03.000Z",
+      "role": "system",
+      "action": "filed",
+      "stage": "filed",
+      "summary": "Ticket filed."
+    },
+    {
+      "at": "2026-11-12T15:35:41.951Z",
+      "role": "omer",
+      "action": "moved",
+      "stage": "dev_plan",
+      "summary": "Started by Omer."
+    },
+    {
+      "at": "2026-11-12T16:37:08.652Z",
+      "role": "omer",
+      "action": "moved",
+      "stage": "test_plan",
+      "summary": "Built by the Developer (Claude). PLAN.md, FEATURE-SPEC.md and DEV-NOTES.md are in the ticket folder; practice-app-v2 tests 73/73."
+    },
+    {
+      "at": "2026-11-12T16:55:26.643Z",
+      "role": "test-planner",
+      "action": "blocked",
+      "stage": "test_plan",
+      "summary": "Drafted 30 case rows; typecheck passed, tests not run, DEV-02 integration deferred. Can you resolve TEST-PLAN Q1-Q3: cancellation recording proof, missing exact error/UI contracts, and deterministic equal-timestamp ordering coverage?",
+      "reportFile": "work/dev/DEV-01/TEST-PLAN.md"
+    }
+  ]
+}

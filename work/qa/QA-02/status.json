@@ -1,0 +1,54 @@
+{
+  "schema": "orchestration/v1",
+  "id": "QA-02",
+  "type": "qa",
+  "title": "QA-02: Prepare pw-live-lab-agents for a public GitHub release",
+  "stage": "sdet",
+  "waiting": "agent",
+  "working": false,
+  "blocked": null,
+  "verdict": null,
+  "openBugs": [],
+  "rev": 3,
+  "createdAt": "2026-11-20T08:07:23.856Z",
+  "updatedAt": "2026-11-20T08:21:19.799Z",
+  "gates": {
+    "plan": {
+      "approved": true,
+      "by": "omer",
+      "at": "2026-11-20T08:21:19.799Z",
+      "note": "OK with the defaults. Repo is obeydili/pw-live-lab-agents. On #5, delete NOTES.md and make the DEV-01 path generic, but leave agents/framework-plan.md untouched (that's my public repo)."
+    }
+  },
+  "history": [
+    {
+      "at": "2026-11-20T08:07:23.856Z",
+      "role": "system",
+      "action": "filed",
+      "stage": "filed",
+      "summary": "Ticket filed."
+    },
+    {
+      "at": "2026-11-20T08:07:41.287Z",
+      "role": "omer",
+      "action": "moved",
+      "stage": "sdet_plan",
+      "summary": "Started by Omer."
+    },
+    {
+      "at": "2026-11-20T08:11:55.283Z",
+      "role": "sdet",
+      "action": "done",
+      "stage": "sdet_plan",
+      "summary": "PLAN.md written, nothing changed yet. Covers the 4-commit split and merge, T20 CI, T21 checks adapted (challenges were never migrated), README/LICENSE, and the privacy scrub. 7 decisions have defaults, e.g. DEV-01 code in DEV-02 commit, Gmail author.",
+      "reportFile": "work/qa/QA-02/PLAN.md"
+    },
+    {
+      "at": "2026-11-20T08:21:19.799Z",
+      "role": "omer",
+      "action": "approved",
+      "stage": "sdet_plan",
+      "summary": "OK with the defaults. Repo is obeydili/pw-live-lab-agents. On #5, delete NOTES.md and make the DEV-01 path generic, but leave agents/framework-plan.md untouched (that's my public repo)."
+    }
+  ]
+}
