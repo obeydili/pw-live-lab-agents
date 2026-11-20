@@ -1,7 +1,30 @@
 {
   "name": "pw-live-lab-agents",
   "version": "1.0.0",
-  "description": "",
+  "description": "Playwright + TypeScript test framework built and reviewed by AI agents in separate roles (Developer, Test Planner, SDET, Reviewer), with Omer as the gatekeeper. Tests a small order-ticket app.",
+  "author": "Omer Beydili",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/obeydili/pw-live-lab-agents.git"
+  },
+  "bugs": {
+    "url": "https://github.com/obeydili/pw-live-lab-agents/issues"
+  },
+  "homepage": "https://github.com/obeydili/pw-live-lab-agents#readme",
+  "keywords": [
+    "playwright",
+    "typescript",
+    "test-automation",
+    "ai-agents",
+    "page-object-model",
+    "api-testing"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
   "scripts": {
     "challenge": "tsx",
     "test": "playwright test",
@@ -11,10 +34,6 @@
     "report": "playwright show-report",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
   "devDependencies": {
     "@playwright/test": "^1.65.0",
     "@types/node": "^26.6.6",
