@@ -77,6 +77,12 @@ const EDITABLE_FIELDS = ['side', 'quantity', 'limitPrice', 'clientOrderId', 'tim
 /** The V2-07 ticket fields when a request leaves them out. */
 const TICKET_DEFAULTS = { timeInForce: 'Day', goodTillDate: null, urgent: false, notes: null };
 
+/** The fields an order's "edited" event compares (DEV-01): what PATCH and PUT can change. */
+const diffFields = (before, after) =>
+  Object.fromEntries(
+    EDITABLE_FIELDS.filter(field => before[field] !== after[field]).map(field => [field, { from: before[field] ?? null, to: after[field] ?? null }]),
+  );
+
 /** The V2-07 fields of a valid request body, defaults filled in; an empty note is stored as null. */
 const ticketFields = body => ({
   timeInForce: body.timeInForce ?? TICKET_DEFAULTS.timeInForce,
@@ -229,6 +235,7 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
     Object.assign(config, initialConfig);
     state = structuredClone({ orders: seed.orders, nextOrderNumber: seed.nextOrderNumber });
     state.watchlists = {}; // username -> symbols, in the user's order
+    // DEV-01: every order's activity, oldest first (one list; GET /api/orders/:id/events filters it).
     // Every order carries updatedAt (null until changed); the seed file itself stays as it is.
     state.orders = state.orders.map(order => ({
       ...order,
@@ -240,8 +247,21 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
       ...TICKET_DEFAULTS,
       ...Object.fromEntries(Object.keys(TICKET_DEFAULTS).filter(key => order[key] !== undefined).map(key => [key, order[key]])),
     }));
+    // Seed orders get the history their fields already tell: created, decided, and (approved) filled.
+    state.events = state.orders.flatMap(order => [
+      { orderId: order.id, at: order.createdAt, actor: order.createdBy, action: 'created', details: { symbol: order.symbol, side: order.side, quantity: order.quantity, limitPrice: order.limitPrice, source: 'seed' } },
+      ...(order.decidedBy
+        ? [{ orderId: order.id, at: order.decidedAt, actor: order.decidedBy, action: order.status === 'Approved' ? 'approved' : 'rejected', details: order.status === 'Rejected' ? { reason: order.rejectionReason } : {} }]
+        : []),
+      ...(order.filledAt ? [{ orderId: order.id, at: order.filledAt, actor: 'system', action: 'execution', details: { from: null, to: 'Filled' } }] : []),
+    ]);
   };
   reset();
+
+  /** DEV-01: appends one activity event for an order (oldest first, so the list is never re-sorted). */
+  const recordEvent = (order, actor, action, details = {}) => {
+    state.events.push({ orderId: order.id, at: new Date().toISOString(), actor, action, details });
+  };
 
   const findUser = username => seed.users.find(user => user.username === username);
   const publicUser = user => ({ username: user.username, role: user.role, displayName: user.displayName });
@@ -290,6 +310,17 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
   app.post('/api/test/reset', (_req, res) => {
     reset();
     res.json({ ok: true, orders: state.orders.length });
+  });
+
+  // Test helper: one order's raw activity log, including after the order is cancelled (deleted), when the public
+  // GET /api/orders/:id/events answers 404. An unknown id gives [].
+  app.get('/api/test/events', (req, res) => {
+    const { orderId } = req.query;
+    if (typeof orderId !== 'string' || !orderId) {
+      res.status(400).json({ error: 'Validation failed.', details: { orderId: 'orderId is required.' } });
+      return;
+    }
+    res.json(state.events.filter(event => event.orderId === orderId));
   });
 
   // Test helper: slow the server down (latencyMs) or change how long an approved order takes to fill (fillDelayMs).
@@ -448,7 +479,7 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
         errors.push({ line: record.line, details: rowErrors });
         continue;
       }
-      created.push(createOrder(row, req.user));
+      created.push(createOrder(row, req.user, { source: 'import' }));
       createdLines.push(record.line);
     }
     res.json({ created, errors, createdLines });
@@ -465,11 +496,11 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
       res.status(409).json({ error: `clientOrderId ${clientOrderId} already exists.` });
       return;
     }
-    res.status(201).json(createOrder(req.body, req.user));
+    res.status(201).json(createOrder(req.body, req.user, { source: 'api' }));
   });
 
-  /** Adds a new Pending Approval order from a validated body (POST and CSV import). */
-  const createOrder = (body, user) => {
+  /** Adds a new Pending Approval order from a validated body (POST, CSV import, duplicate) and records "created". */
+  const createOrder = (body, user, eventDetails = {}) => {
     const { symbol, side, quantity, limitPrice, clientOrderId = null } = body;
     const order = {
       id: `ORD-${state.nextOrderNumber++}`,
@@ -490,6 +521,7 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
       ...ticketFields(body),
     };
     state.orders.push(order);
+    recordEvent(order, user.username, 'created', { symbol, side, quantity, limitPrice, ...eventDetails });
     return order;
   };
 
@@ -500,6 +532,16 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
       return;
     }
     res.json(order);
+  });
+
+  // DEV-01: an order's activity, oldest first. Same access as GET /api/orders/:id (any signed-in user).
+  app.get('/api/orders/:id/events', (req, res) => {
+    const order = state.orders.find(o => o.id === req.params.id);
+    if (!order) {
+      res.status(404).json({ error: `Order ${req.params.id} not found.` });
+      return;
+    }
+    res.json(state.events.filter(event => event.orderId === order.id));
   });
 
   const isDuplicateClientId = (clientOrderId, exceptId) =>
@@ -553,10 +595,13 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
       res.status(409).json({ error: `clientOrderId ${body.clientOrderId} already exists.` });
       return;
     }
+    const before = { ...order };
     for (const key of Object.keys(body)) order[key] = body[key];
     order.goodTillDate = merged.goodTillDate ?? null;
     if ('notes' in body && !body.notes) order.notes = null;
     order.updatedAt = new Date().toISOString();
+    const changes = diffFields(before, order);
+    if (Object.keys(changes).length > 0) recordEvent(order, req.user.username, 'edited', { method: 'PATCH', changes });
     res.json(order);
   });
 
@@ -576,8 +621,11 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
       res.status(409).json({ error: `clientOrderId ${clientOrderId} already exists.` });
       return;
     }
+    const before = { ...order };
     Object.assign(order, { side: body.side, quantity: body.quantity, limitPrice: body.limitPrice, clientOrderId, ...ticketFields(body) });
     order.updatedAt = new Date().toISOString();
+    const changes = diffFields(before, order);
+    if (Object.keys(changes).length > 0) recordEvent(order, req.user.username, 'edited', { method: 'PUT', changes });
     res.json(order);
   });
 
@@ -585,6 +633,8 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
     const order = findOwnPendingOrder(req, res);
     if (!order) return;
     state.orders = state.orders.filter(o => o.id !== order.id);
+    // Kept in the log; the order itself is gone, so GET /api/orders/:id/events answers 404 from now on.
+    recordEvent(order, req.user.username, 'cancelled');
     res.status(204).end();
   });
 
@@ -608,6 +658,7 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
     order.status = status;
     order.decidedBy = req.user.username;
     order.decidedAt = new Date().toISOString();
+    recordEvent(order, req.user.username, status === 'Approved' ? 'approved' : 'rejected', status === 'Rejected' ? { reason: order.rejectionReason } : {});
     if (status === 'Approved') startExecution(order);
     res.json(order);
   };
@@ -619,6 +670,7 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
    */
   const startExecution = order => {
     order.executionStatus = 'Working';
+    recordEvent(order, 'system', 'execution', { from: null, to: 'Working' });
     const step = (delay, update) =>
       setTimeout(() => {
         const current = state.orders.find(o => o.id === order.id);
@@ -626,16 +678,48 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
       }, delay).unref();
     const delay = config.fillDelayMs;
     step(delay / 2, current => {
-      if (current.executionStatus === 'Working') current.executionStatus = 'Partially Filled';
+      if (current.executionStatus !== 'Working') return;
+      current.executionStatus = 'Partially Filled';
+      recordEvent(current, 'system', 'execution', { from: 'Working', to: 'Partially Filled' });
     });
     step(delay, current => {
+      const from = current.executionStatus;
       current.executionStatus = 'Filled';
       current.filledAt = new Date().toISOString();
+      recordEvent(current, 'system', 'execution', { from, to: 'Filled' });
     });
   };
 
   app.post('/api/orders/:id/approve', requireRole('approver'), decide('Approved'));
   app.post('/api/orders/:id/reject', requireRole('approver'), decide('Rejected'));
+
+  // DEV-02: a new Pending Approval order with the source's symbol, side, quantity, price and ticket fields.
+  // Any request body is ignored; clientOrderId is never copied (a unique client id would 409); the source is unchanged.
+  app.post('/api/orders/:id/duplicate', requireRole('trader'), (req, res) => {
+    const source = state.orders.find(o => o.id === req.params.id);
+    if (!source) {
+      res.status(404).json({ error: `Order ${req.params.id} not found.` });
+      return;
+    }
+    const body = {
+      symbol: source.symbol,
+      side: source.side,
+      quantity: source.quantity,
+      limitPrice: source.limitPrice,
+      clientOrderId: null,
+      timeInForce: source.timeInForce,
+      goodTillDate: source.goodTillDate,
+      urgent: source.urgent,
+      notes: source.notes,
+    };
+    // Same rules as POST /api/orders: e.g. a GTD source whose date has passed can't be copied as it is.
+    const errors = validateOrder(body, seed.symbols);
+    if (Object.keys(errors).length > 0) {
+      res.status(400).json({ error: 'Validation failed.', details: errors });
+      return;
+    }
+    res.status(201).json(createOrder(body, req.user, { source: 'duplicate', duplicatedFrom: source.id }));
+  });
 
   app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found.' }));
 

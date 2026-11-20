@@ -22,7 +22,7 @@
     </div>
   </header>
   <main class="card narrow">
-    <p id="flash" role="status" class="flash" hidden></p>
+    <p id="flash" role="status" class="flash" data-testid="flash" hidden></p>
     <h1 id="order-heading">Order</h1>
     <div class="spinner" role="progressbar" aria-label="Loading order" data-testid="loading-spinner" hidden></div>
     <dl class="details">
@@ -42,6 +42,11 @@
       <dt>Rejection reason</dt><dd data-field="rejectionReason"></dd>
     </dl>
     <div id="order-actions" class="actions" hidden></div>
+    <section class="activity" aria-labelledby="activity-heading" data-testid="activity" hidden>
+      <h2 id="activity-heading">Activity</h2>
+      <ol class="activity-list" data-testid="activity-list"></ol>
+      <p class="muted" data-testid="activity-empty" hidden>No activity yet.</p>
+    </section>
     <p><a id="open-quote" href="/orders" target="_blank" rel="noopener" hidden>Open quote</a></p>
     <p id="order-error" class="error" role="alert" hidden></p>
     <a href="/orders">Back to orders</a>

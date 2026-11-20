@@ -358,17 +358,103 @@ const initOrderDetails = async () => {
     return;
   }
   document.getElementById('order-heading').textContent = `Order ${order.id}`;
-  if (new URLSearchParams(window.location.search).get('created') === '1') {
+  const search = new URLSearchParams(window.location.search);
+  if (search.get('created') === '1') {
     showMessage('flash', `Order ${order.id} submitted for approval.`);
   }
   renderOrderFields(order);
   renderOrderActions(order, user);
   pollExecution(order);
+  const events = await renderActivity(order.id);
+  if (search.get('duplicated') === '1') {
+    // The source id comes from the page that duplicated it, or from the order's own "created" event.
+    const key = `${DUPLICATED_FROM_KEY}${order.id}`;
+    let sourceId = null;
+    try {
+      sourceId = window.sessionStorage.getItem(key);
+      window.sessionStorage.removeItem(key);
+    } catch {
+      // Storage unavailable: fall back to the event.
+    }
+    sourceId ||= events?.find(event => event.action === 'created')?.details?.duplicatedFrom ?? null;
+    if (sourceId) showMessage('flash', `Order ${order.id} created as a copy of ${sourceId}.`);
+  }
   // Opens in a new tab on purpose: practice context.waitForEvent('page') / page.waitForEvent('popup').
   const quoteLink = document.getElementById('open-quote');
   quoteLink.href = `/quotes/${encodeURIComponent(order.symbol)}`;
   quoteLink.hidden = false;
 };
+
+// --- DEV-01: Activity ---
+
+const ACTION_LABELS = { created: 'Created', edited: 'Edited', approved: 'Approved', rejected: 'Rejected', execution: 'Execution', cancelled: 'Cancelled' };
+const FIELD_LABELS = {
+  side: 'Side', quantity: 'Quantity', limitPrice: 'Limit price', clientOrderId: 'Client order id',
+  timeInForce: 'Time in force', goodTillDate: 'Good till date', urgent: 'Urgent', notes: 'Notes',
+};
+const formatEventTime = iso => {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? iso : date.toLocaleString('en-GB', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+const formatValue = (field, value) => {
+  if (value === null || value === undefined || value === '') return '—';
+  if (field === 'limitPrice') return formatPrice(value);
+  if (field === 'quantity') return formatQuantity(value);
+  if (field === 'urgent') return value ? 'Yes' : 'No';
+  return String(value);
+};
+
+/** One line of detail per event: what was created, what changed, the reason, the execution step. */
+const describeEvent = event => {
+  const details = event.details || {};
+  switch (event.action) {
+    case 'created': {
+      const what = `${details.side} ${formatQuantity(details.quantity)} ${details.symbol} @ ${formatPrice(details.limitPrice)}`;
+      if (details.source === 'duplicate') return `${what} · copy of ${details.duplicatedFrom}`;
+      if (details.source === 'import') return `${what} · CSV import`;
+      return what;
+    }
+    case 'edited':
+      return Object.entries(details.changes || {})
+        .map(([field, change]) => `${FIELD_LABELS[field] || field}: ${formatValue(field, change.from)} → ${formatValue(field, change.to)}`)
+        .join('; ');
+    case 'rejected':
+      return details.reason ? `Reason: ${details.reason}` : 'No reason given';
+    case 'execution':
+      return details.from ? `${details.from} → ${details.to}` : details.to;
+    default:
+      return '';
+  }
+};
+
+/** Fills the Activity section from GET /api/orders/:id/events; returns the events (or null when they can't load). */
+const renderActivity = async orderId => {
+  const section = document.querySelector('[data-testid="activity"]');
+  const list = document.querySelector('[data-testid="activity-list"]');
+  if (!section || !list) return null;
+  const { ok, body: events } = await api(`/api/orders/${encodeURIComponent(orderId)}/events`);
+  if (!ok || !Array.isArray(events)) return null;
+  list.replaceChildren(...events.map(event => {
+    const time = el('time', { dateTime: event.at, textContent: formatEventTime(event.at) });
+    const item = el('li', { className: 'activity-item' }, [
+      time,
+      el('span', { className: 'activity-actor', textContent: event.actor }),
+      el('span', { className: 'activity-action', textContent: ACTION_LABELS[event.action] || event.action }),
+    ]);
+    const detail = describeEvent(event);
+    if (detail) item.append(el('span', { className: 'activity-details', textContent: detail }));
+    item.setAttribute('data-testid', 'activity-item');
+    item.dataset.action = event.action;
+    return item;
+  }));
+  document.querySelector('[data-testid="activity-empty"]').hidden = events.length > 0;
+  section.hidden = false;
+  return events;
+};
+
+// --- DEV-02: Duplicate order ---
+
+const DUPLICATED_FROM_KEY = 'tdl_duplicated_from_';
 
 /** Native dialogs on purpose: confirm to cancel (owner), prompt for a rejection reason (approver), alert on a blank one. */
 const renderOrderActions = (order, user) => {
@@ -381,6 +467,7 @@ const renderOrderActions = (order, user) => {
     renderOrderFields(fresh);
     renderOrderActions(fresh, user);
     pollExecution(fresh);
+    await renderActivity(fresh.id);
   };
 
   if (pending && user?.role === 'trader' && order.createdBy === user.username) {
@@ -424,6 +511,32 @@ const renderOrderActions = (order, user) => {
       }),
     );
   }
+  // Any existing order, for traders only (approvers don't create orders).
+  if (user?.role === 'trader') {
+    const duplicate = el('button', {
+      type: 'button',
+      className: 'secondary',
+      textContent: 'Duplicate order',
+      onclick: async () => {
+        duplicate.disabled = true;
+        const result = await api(`/api/orders/${encodeURIComponent(order.id)}/duplicate`, { method: 'POST' });
+        if (!result.ok) {
+          const details = result.body?.details ? Object.values(result.body.details).join(' ') : '';
+          toast(`${result.body?.error || 'Could not duplicate the order.'} ${details}`.trim(), 'error');
+          duplicate.disabled = false;
+          return;
+        }
+        try {
+          window.sessionStorage.setItem(`${DUPLICATED_FROM_KEY}${result.body.id}`, order.id);
+        } catch {
+          // Storage unavailable: the new page reads the source from the order's "created" event.
+        }
+        window.location.assign(`/orders/${encodeURIComponent(result.body.id)}?duplicated=1`);
+      },
+    });
+    duplicate.setAttribute('data-testid', 'duplicate-order');
+    actions.append(duplicate);
+  }
   actions.hidden = actions.childElementCount === 0;
 };
 
@@ -461,6 +574,8 @@ const pollExecution = initial => {
     if (status === 404) window.clearInterval(timer);
     if (!ok) return;
     renderOrderFields(order);
+    // Each execution step is an Activity event too.
+    await renderActivity(order.id);
     if (!isExecuting(order)) window.clearInterval(timer);
   }, EXECUTION_POLL_MS);
   window.addEventListener('pagehide', () => window.clearInterval(timer), { once: true });

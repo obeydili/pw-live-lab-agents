@@ -72,10 +72,13 @@ Both are kept in memory, so restarting the app logs everyone out. Re-run your au
 | `PATCH /api/orders/:id` | trader (owner) | Partial update of `side`, `quantity`, `limitPrice`, `clientOrderId` → `200` order with `updatedAt`. `400` for `symbol` ("Symbol cannot be changed."), unknown keys ("Unknown field."), bad values or `{}` ("Nothing to update."); `409` for another order's `clientOrderId` |
 | `PUT /api/orders/:id` | trader (owner) | Full replacement: `symbol` (unchanged), `side`, `quantity`, `limitPrice`, optional `clientOrderId` (left out → `null`) → `200` order with `updatedAt`; `400` with `details` |
 | `DELETE /api/orders/:id` | trader (owner) | `204`, no body; the order is gone (`404` after) |
+| `GET /api/orders/:id/events` | yes | The order's activity, oldest first: `[{ orderId, at, actor, action, details }]` with `action` one of `created`, `edited`, `approved`, `rejected`, `execution`, `cancelled`; `404` for an unknown or cancelled order |
+| `POST /api/orders/:id/duplicate` | trader | Copies any order into a new Pending Approval one (`clientOrderId` null, request body ignored) → `201`; `404` unknown id; `400 { error, details }` when the copied fields no longer validate (e.g. a past GTD date) |
 | `POST /api/orders/:id/approve` | approver | `200` order; `403` for a trader; `409` if no longer pending |
 | `POST /api/orders/:id/reject` | approver | Same as approve; optional body `{ reason }` (1-200 characters once trimmed, else `400 details.reason`) is stored as `rejectionReason` (default `null`) |
 | `POST /api/test/reset` | none | Restores the seed orders and the test config (sessions are kept) → `200 { ok, orders }` |
 | `GET /api/test/config` | none | `{ latencyMs, fillDelayMs }` |
+| `GET /api/test/events?orderId=ORD-x` | none | That order's raw activity log, oldest first, **including after it was cancelled** (the public events route answers 404 then); `[]` for an unknown id; `400 details.orderId` "orderId is required." without one |
 | `POST /api/test/config` | none | Any subset of `{ latencyMs: 0-10000, fillDelayMs: 0-60000 }` → `200` the whole config; `400 { error, details }` for bad or unknown keys. `latencyMs` delays every authenticated API response (never `/api/auth/*`, `/api/test/*` or `/api/health`); defaults come from `LATENCY_MS` (0) and `FILL_DELAY_MS` (4000) |
 
 PATCH, PUT and DELETE check in this order: `404` unknown order → `403` "You can only change your own orders." → `409` "Order ORD-x is already Approved." (not pending) → `400` validation. An approver gets the usual `403` "Only a trader can do this.". Every order has `updatedAt` (`null` until changed). Any `/api` request with a body that isn't valid JSON gets `400 { error: "Malformed JSON body." }`; unexpected errors are `500 { error: "Internal server error." }`.
@@ -112,3 +115,5 @@ Execution (eventual consistency): approving answers at once with `executionStatu
 - V2-09: Native dialogs: confirm (cancel), prompt (reject with reason) and alert (`rejectionReason` on reject, Cancel order and Reject with reason… on the details page, the Upload alert; /approvals keeps working without dialogs)
 - V2-10: Quote popup (new tab) and quote iframe widget (seed quotes, `GET /api/quotes/:symbol`, `/quotes/:symbol`, "Open quote" with `target=_blank`, `/widgets/quote` in the ticket's "Market quote" iframe with "Use last price" via `postMessage`)
 - V2-11: Tooltip, keyboard shortcuts and drag-and-drop watchlist (the Limit price tooltip, `/`, `Escape` and `Alt+N` on /orders, `GET/PUT /api/watchlist` and the /watchlist page with HTML5 drag and drop)
+- DEV-01: Order activity history (`GET /api/orders/:id/events`, the Activity section on `/orders/:id`, `GET /api/test/events` for cancelled orders)
+- DEV-02: Duplicate order (`POST /api/orders/:id/duplicate`, the "Duplicate order" button and its flash)

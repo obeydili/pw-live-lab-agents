@@ -1,0 +1,146 @@
+{
+  "schema": "orchestration/v1",
+  "id": "DEV-02",
+  "type": "dev",
+  "title": "Duplicate order",
+  "stage": "done",
+  "waiting": "omer",
+  "working": false,
+  "blocked": null,
+  "verdict": "go",
+  "openBugs": [],
+  "rev": 13,
+  "createdAt": "2026-11-12T16:25:48.107Z",
+  "updatedAt": "2026-11-20T07:33:53.312Z",
+  "gates": {
+    "move_to_qa": {
+      "approved": true,
+      "by": "omer",
+      "at": "2026-11-12T16:37:08.695Z",
+      "note": "Built by the Developer (Claude). PLAN.md, FEATURE-SPEC.md and DEV-NOTES.md are in the ticket folder; practice-app-v2 tests 73/73."
+    },
+    "test_plan": {
+      "approved": true,
+      "by": "omer",
+      "at": "2026-11-12T17:08:12.392Z"
+    },
+    "go_no_go": {
+      "approved": true,
+      "by": "omer",
+      "at": "2026-11-20T07:33:53.312Z"
+    }
+  },
+  "history": [
+    {
+      "at": "2026-11-12T16:25:48.107Z",
+      "role": "system",
+      "action": "filed",
+      "stage": "filed",
+      "summary": "Ticket filed."
+    },
+    {
+      "at": "2026-11-12T16:37:08.695Z",
+      "role": "omer",
+      "action": "moved",
+      "stage": "test_plan",
+      "summary": "Built by the Developer (Claude). PLAN.md, FEATURE-SPEC.md and DEV-NOTES.md are in the ticket folder; practice-app-v2 tests 73/73."
+    },
+    {
+      "at": "2026-11-12T16:44:53.192Z",
+      "role": "test-planner",
+      "action": "blocked",
+      "stage": "test_plan",
+      "summary": "Drafted TEST-PLAN.md with 29 case rows; typecheck passed. Is app-level coverage sufficient for expired-GTD validation or should Developer add a test hook, and what exact status/error body must an invalid Bearer token return?",
+      "reportFile": "work/dev/DEV-02/TEST-PLAN.md"
+    },
+    {
+      "at": "2026-11-12T17:05:46.042Z",
+      "role": "omer",
+      "action": "unblocked",
+      "stage": "test_plan",
+      "summary": "app-level coverage is sufficient. And for now, what the status/error body is returning for an invalid Bearer token is fine for now. We may later file a ticket for it"
+    },
+    {
+      "at": "2026-11-12T17:07:47.272Z",
+      "role": "test-planner",
+      "action": "done",
+      "stage": "test_plan",
+      "summary": "Updated the 29-row test plan with Omer's decisions: AC4 uses existing app-level coverage, and invalid-token exact response values are excepted while integrity checks remain. No planning blockers remain; typecheck passed, tests not run.",
+      "reportFile": "work/dev/DEV-02/TEST-PLAN.md"
+    },
+    {
+      "at": "2026-11-12T17:08:12.392Z",
+      "role": "omer",
+      "action": "approved",
+      "stage": "test_plan",
+      "summary": ""
+    },
+    {
+      "at": "2026-11-12T17:25:24.889Z",
+      "role": "sdet",
+      "action": "done",
+      "stage": "sdet",
+      "summary": "52 Playwright tests (TC01-10, 12-29; TC11 is app-level). typecheck clean, test-alone 54 passed, parallel 54 passed in 3 of 4 runs; the 1 failure is existing hybrid-create (Date.now clientOrderId clash, QA-01). No app bugs.",
+      "reportFile": "work/dev/DEV-02/SDET-NOTES.md"
+    },
+    {
+      "at": "2026-11-14T00:37:37.621Z",
+      "role": "reviewer",
+      "action": "done",
+      "stage": "review",
+      "summary": "No-Go: typecheck passed; serial 54/54, parallel 54/54, repeat 104/104, app tests 73/73. Found a hardcoded password, missing integrity/persistence/contract assertions, and POM/type violations. Details in REVIEW.md.",
+      "reportFile": "work/dev/DEV-02/REVIEW.md",
+      "verdict": "no-go"
+    },
+    {
+      "at": "2026-11-20T00:30:07.395Z",
+      "role": "omer",
+      "action": "changes_requested",
+      "stage": "review",
+      "summary": "Dostum, please address the issues Reviewer has pointed out. Let me know if any fixes depend on app change or if you need any details from the developer.",
+      "verdict": "no-go"
+    },
+    {
+      "at": "2026-11-20T00:40:56.819Z",
+      "role": "sdet",
+      "action": "done",
+      "stage": "sdet",
+      "summary": "Fixed B3-B5 (persistence checks, exact status codes, POM wait + status/alert roles, types in types/). typecheck clean, test-alone 54/54, npm test 54 then 53+1 (hybrid-create flake, QA-01). B1/B2 are Developer app-test fixes, no app change needed.",
+      "reportFile": "work/dev/DEV-02/SDET-NOTES.md"
+    },
+    {
+      "at": "2026-11-20T06:08:33.407Z",
+      "role": "reviewer",
+      "action": "done",
+      "stage": "review",
+      "summary": "B1-B5 fixed; all 29 DEV-02 cases covered. Typecheck, serial 54/54, parallel 54/54, DEV-02 repeat 104/104 and app 76/76 passed. No-Go: QA-01 legacy repeat reproduced two 409 failures (2 passed, 2 failed).",
+      "reportFile": "work/dev/DEV-02/REVIEW.md",
+      "verdict": "no-go"
+    },
+    {
+      "at": "2026-11-20T07:05:00.120Z",
+      "role": "omer",
+      "action": "changes_requested",
+      "stage": "review",
+      "summary": "Waiting for the 'Bug Ticket' to be done by the Developer",
+      "verdict": "no-go"
+    },
+    {
+      "at": "2026-11-20T07:32:16.663Z",
+      "role": "reviewer",
+      "action": "done",
+      "stage": "review",
+      "summary": "Go: all 29 DEV-02 plan cases covered; B1-B5, QA-01 R1 and BUG-1 verified resolved. Typecheck passed; serial 54/54, parallel 54/54, full repeat 162/162, focused repeat 150/150 and app 77/77. No blockers remain.",
+      "reportFile": "work/dev/DEV-02/REVIEW.md",
+      "verdict": "go"
+    },
+    {
+      "at": "2026-11-20T07:33:53.312Z",
+      "role": "omer",
+      "action": "approved",
+      "stage": "review",
+      "summary": "",
+      "verdict": "go"
+    }
+  ]
+}

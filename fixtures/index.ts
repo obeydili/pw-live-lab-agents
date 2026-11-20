@@ -1,10 +1,23 @@
 import { Page, test as base } from '@playwright/test';
-import { ApiClient } from '../helpers/api-client';
-import { env } from '../helpers/env';
+import type { ApiClient } from '../helpers/api-client';
+import { ApiClientPool } from '../helpers/api-client-pool';
+import { env, credentials } from '../helpers/env';
+import { startIsolatedApp } from '../helpers/isolated-app';
+import type { UserKey } from '../types/order';
+import { Desk } from './desk';
 import { LoginPage } from '../pages/login.page';
 import { OrdersPage } from '../pages/orders.page';
 
+type OpenSession = (user: UserKey, baseURL?: string) => Promise<Page>;
+
 type MyFixtures = {
+  clientPool: ApiClientPool;
+  /** API clients and order setup for the shared app (BASE_URL). */
+  desk: Desk;
+  /** API clients and order setup for a private app instance started for this test only. */
+  isolatedDesk: Desk;
+  /** Opens a signed-in page in a fresh browser context; every context is closed after the test. */
+  openSession: OpenSession;
   apiClient: ApiClient;
   trader2ApiClient: ApiClient;
   approverApiClient: ApiClient;
@@ -16,20 +29,53 @@ type MyFixtures = {
 };
 
 export const test = base.extend<MyFixtures>({
-  apiClient: async ({ request }, use) => {
-    const client = new ApiClient(request);
-    await client.login(env.TRADER1_USERNAME, env.TRADER1_PASSWORD);
-    await use(client);
+  clientPool: async ({ playwright, baseURL }, use) => {
+    const pool = new ApiClientPool(playwright, baseURL ?? env.BASE_URL);
+    try {
+      await use(pool);
+    } finally {
+      await pool.dispose();
+    }
   },
-  trader2ApiClient: async ({ request }, use) => {
-    const client = new ApiClient(request);
-    await client.login(env.TRADER2_USERNAME, env.TRADER2_PASSWORD);
-    await use(client);
+  desk: async ({ clientPool, baseURL }, use) => {
+    await use(new Desk(baseURL ?? env.BASE_URL, clientPool));
   },
-  approverApiClient: async ({ request }, use) => {
-    const client = new ApiClient(request);
-    await client.login(env.APPROVER1_USERNAME, env.APPROVER1_PASSWORD);
-    await use(client);
+  isolatedDesk: async ({ clientPool }, use) => {
+    const app = await startIsolatedApp();
+    try {
+      await use(new Desk(app.baseURL, clientPool));
+    } finally {
+      await app.stop();
+    }
+  },
+  openSession: async ({ browser, baseURL }, use) => {
+    const contexts: Awaited<ReturnType<typeof browser.newContext>>[] = [];
+    const open: OpenSession = async (user, sessionBaseURL = baseURL ?? env.BASE_URL) => {
+      const context = await browser.newContext({ baseURL: sessionBaseURL });
+      contexts.push(context);
+      const { username, password } = credentials[user];
+      const login = await context.request.post('/api/auth/login', {
+        data: { username, password },
+      });
+      if (!login.ok()) {
+        throw new Error(`Failed to sign in ${user}: ${login.status()} ${login.statusText()}`);
+      }
+      return await context.newPage();
+    };
+    try {
+      await use(open);
+    } finally {
+      await Promise.all(contexts.map((context) => context.close()));
+    }
+  },
+  apiClient: async ({ desk }, use) => {
+    await use(await desk.as('trader1'));
+  },
+  trader2ApiClient: async ({ desk }, use) => {
+    await use(await desk.as('trader2'));
+  },
+  approverApiClient: async ({ desk }, use) => {
+    await use(await desk.as('approver1'));
   },
   loginPage: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
@@ -70,3 +116,5 @@ export const test = base.extend<MyFixtures>({
     }
   },
 });
+
+export { expect } from '@playwright/test';

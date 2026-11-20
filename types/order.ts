@@ -21,9 +21,17 @@ export interface CreateOrderRequest {
   quantity: number;
   limitPrice: number;
   clientOrderId?: string | null;
+  timeInForce?: TimeInForce;
+  goodTillDate?: string | null;
+  urgent?: boolean;
+  notes?: string;
 }
 
-export interface Order extends CreateOrderRequest {
+export type UpdateOrderRequest = Partial<
+  Pick<CreateOrderRequest, 'side' | 'quantity' | 'limitPrice' | 'clientOrderId'>
+>;
+
+export interface Order extends Omit<CreateOrderRequest, 'notes'> {
   id: string;
   clientOrderId: string | null;
   status: OrderStatus;
@@ -61,4 +69,30 @@ export interface ResetResponse {
 export interface TestConfig {
   latencyMs: number;
   fillDelayMs: number;
+}
+
+export type UserKey = 'trader1' | 'trader2' | 'approver1';
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export interface ValidationErrorResponse extends ErrorResponse {
+  details: Record<string, string>;
+}
+
+export type OrderEventAction =
+  | 'created'
+  | 'edited'
+  | 'approved'
+  | 'rejected'
+  | 'execution'
+  | 'cancelled';
+
+export interface OrderEvent {
+  orderId: string;
+  at: string;
+  actor: string;
+  action: OrderEventAction;
+  details: Record<string, unknown>;
 }

@@ -1,7 +1,13 @@
 // Starts the app on a free port for one test file: const app = await startApp(); … await app.close().
 import { createApp } from '../server.js';
+import seed from '../data/seed.json' with { type: 'json' };
 
-export const PASSWORD = 'Password123!';
+/** A seed user's password, read from the app's own seed data so no test names a credential. */
+export const passwordOf = username => {
+  const user = seed.users.find(candidate => candidate.username === username);
+  if (!user) throw new Error(`No seed user ${username}`);
+  return user.password;
+};
 
 export const startApp = async options => {
   const server = createApp(options).listen(0);
@@ -9,7 +15,7 @@ export const startApp = async options => {
   const baseUrl = `http://127.0.0.1:${server.address().port}`;
 
   /** Signs in through the API and returns the Bearer token. */
-  const login = async (username, password = PASSWORD) => {
+  const login = async (username, password = passwordOf(username)) => {
     const response = await fetch(`${baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

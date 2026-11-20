@@ -83,6 +83,13 @@ th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: le
 .details { display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px; }
 .details dt { color: var(--muted); }
 .details dd { margin: 0; }
+.activity { margin-top: 24px; }
+.activity h2 { font-size: 18px; margin: 0 0 8px; }
+.activity-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.activity-item { padding: 8px 10px; border-left: 3px solid var(--line); background: #f7f9fc; border-radius: 4px; font-size: 14px; }
+.activity-item time { color: var(--muted); font-size: 13px; margin-right: 8px; }
+.activity-item .activity-actor { font-weight: 600; margin-right: 6px; }
+.activity-item .activity-details { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
 
 .visually-hidden {
   position: absolute;
