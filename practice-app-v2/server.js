@@ -258,9 +258,13 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
   };
   reset();
 
-  /** DEV-01: appends one activity event for an order (oldest first, so the list is never re-sorted). */
-  const recordEvent = (order, actor, action, details = {}) => {
-    state.events.push({ orderId: order.id, at: new Date().toISOString(), actor, action, details });
+  /**
+   * DEV-01: appends one activity event for an order (oldest first, so the list is never re-sorted). `at` is the
+   * timestamp the order itself records for this change (createdAt, updatedAt, decidedAt, filledAt) when there is
+   * one: a second clock read could land a millisecond later (BUG-1).
+   */
+  const recordEvent = (order, actor, action, details = {}, at = new Date().toISOString()) => {
+    state.events.push({ orderId: order.id, at, actor, action, details });
   };
 
   const findUser = username => seed.users.find(user => user.username === username);
@@ -521,7 +525,7 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
       ...ticketFields(body),
     };
     state.orders.push(order);
-    recordEvent(order, user.username, 'created', { symbol, side, quantity, limitPrice, ...eventDetails });
+    recordEvent(order, user.username, 'created', { symbol, side, quantity, limitPrice, ...eventDetails }, order.createdAt);
     return order;
   };
 
@@ -601,7 +605,7 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
     if ('notes' in body && !body.notes) order.notes = null;
     order.updatedAt = new Date().toISOString();
     const changes = diffFields(before, order);
-    if (Object.keys(changes).length > 0) recordEvent(order, req.user.username, 'edited', { method: 'PATCH', changes });
+    if (Object.keys(changes).length > 0) recordEvent(order, req.user.username, 'edited', { method: 'PATCH', changes }, order.updatedAt);
     res.json(order);
   });
 
@@ -625,7 +629,7 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
     Object.assign(order, { side: body.side, quantity: body.quantity, limitPrice: body.limitPrice, clientOrderId, ...ticketFields(body) });
     order.updatedAt = new Date().toISOString();
     const changes = diffFields(before, order);
-    if (Object.keys(changes).length > 0) recordEvent(order, req.user.username, 'edited', { method: 'PUT', changes });
+    if (Object.keys(changes).length > 0) recordEvent(order, req.user.username, 'edited', { method: 'PUT', changes }, order.updatedAt);
     res.json(order);
   });
 
@@ -658,7 +662,7 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
     order.status = status;
     order.decidedBy = req.user.username;
     order.decidedAt = new Date().toISOString();
-    recordEvent(order, req.user.username, status === 'Approved' ? 'approved' : 'rejected', status === 'Rejected' ? { reason: order.rejectionReason } : {});
+    recordEvent(order, req.user.username, status === 'Approved' ? 'approved' : 'rejected', status === 'Rejected' ? { reason: order.rejectionReason } : {}, order.decidedAt);
     if (status === 'Approved') startExecution(order);
     res.json(order);
   };
@@ -686,7 +690,7 @@ export function createApp({ seed = loadSeed(), config: configOverrides = {} } = 
       const from = current.executionStatus;
       current.executionStatus = 'Filled';
       current.filledAt = new Date().toISOString();
-      recordEvent(current, 'system', 'execution', { from, to: 'Filled' });
+      recordEvent(current, 'system', 'execution', { from, to: 'Filled' }, current.filledAt);
     });
   };
 

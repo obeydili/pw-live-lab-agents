@@ -172,3 +172,71 @@ test('GET /api/test/events matches the public events route for a live order, and
   await app.request('/api/test/reset', { method: 'POST' });
   assert.deepEqual((await app.request(`/api/test/events?orderId=${id}`)).body, []);
 });
+
+test('each event uses the exact timestamp its order records, even when clock reads differ (BUG-1)', async () => {
+  // Every `new Date()` without arguments returns the next millisecond, so two clock reads in one request always
+  // differ, deterministically. Before the fix, created.at was one millisecond after createdAt.
+  const RealDate = Date;
+  let tick = RealDate.parse('2026-03-01T10:00:00.000Z');
+  class TickingDate extends RealDate {
+    constructor(...args) {
+      if (args.length === 0) super(tick++);
+      else super(...args);
+    }
+    static now() {
+      return tick++;
+    }
+  }
+  const tickingApp = await startApp({ config: { fillDelayMs: 0 } });
+  globalThis.Date = TickingDate;
+  try {
+    const [owner, checker] = await Promise.all([tickingApp.login('trader1'), tickingApp.login('approver1')]);
+    const read = async id => ({
+      order: (await tickingApp.request(`/api/orders/${id}`, { token: owner })).body,
+      events: (await tickingApp.request(`/api/orders/${id}/events`, { token: owner })).body,
+    });
+
+    // Created through POST, then edited (PATCH and PUT), approved and filled.
+    const id = (await tickingApp.request('/api/orders', { method: 'POST', token: owner, body: ticket })).body.id;
+    let { order, events } = await read(id);
+    assert.equal(events[0].action, 'created');
+    assert.equal(events[0].at, order.createdAt);
+
+    await tickingApp.request(`/api/orders/${id}`, { method: 'PATCH', token: owner, body: { quantity: 11 } });
+    ({ order, events } = await read(id));
+    assert.equal(events.at(-1).action, 'edited');
+    assert.equal(events.at(-1).at, order.updatedAt);
+    await tickingApp.request(`/api/orders/${id}`, { method: 'PUT', token: owner, body: { ...ticket, quantity: 12 } });
+    ({ order, events } = await read(id));
+    assert.equal(events.at(-1).details.method, 'PUT');
+    assert.equal(events.at(-1).at, order.updatedAt);
+
+    await tickingApp.request(`/api/orders/${id}/approve`, { method: 'POST', token: checker });
+    for (let attempt = 0; attempt < 50 && order.executionStatus !== 'Filled'; attempt += 1) ({ order, events } = await read(id));
+    assert.equal(order.executionStatus, 'Filled');
+    assert.equal(events.find(event => event.action === 'approved').at, order.decidedAt);
+    assert.equal(events.find(event => event.details.to === 'Filled').at, order.filledAt);
+
+    // Rejected, duplicated (DEV-02 TC06) and imported orders.
+    const rejectedId = (await tickingApp.request('/api/orders', { method: 'POST', token: owner, body: ticket })).body.id;
+    await tickingApp.request(`/api/orders/${rejectedId}/reject`, { method: 'POST', token: checker, body: { reason: 'Too big' } });
+    ({ order, events } = await read(rejectedId));
+    assert.equal(events.at(-1).action, 'rejected');
+    assert.equal(events.at(-1).at, order.decidedAt);
+
+    const copy = (await tickingApp.request(`/api/orders/${rejectedId}/duplicate`, { method: 'POST', token: owner })).body;
+    ({ order, events } = await read(copy.id));
+    assert.deepEqual(events.map(event => event.action), ['created']);
+    assert.equal(events[0].at, order.createdAt);
+    assert.equal(events[0].at, copy.createdAt);
+
+    const imported = (await tickingApp.request('/api/orders/import', {
+      method: 'POST', token: owner, headers: { 'Content-Type': 'text/csv' }, body: 'symbol,side,quantity,limitPrice\nACME,Buy,5,10\n',
+    })).body.created[0];
+    ({ order, events } = await read(imported.id));
+    assert.equal(events[0].at, order.createdAt);
+  } finally {
+    globalThis.Date = RealDate;
+    await tickingApp.close();
+  }
+});

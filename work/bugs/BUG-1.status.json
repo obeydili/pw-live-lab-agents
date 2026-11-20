@@ -1,0 +1,27 @@
+{
+  "schema": "orchestration/bug-v1",
+  "id": "BUG-1",
+  "stage": "fixed",
+  "rev": 2,
+  "updatedAt": "2026-11-20T07:23:01.060Z",
+  "history": [
+    {
+      "at": "2026-11-20T06:38:25.483Z",
+      "role": "system",
+      "action": "filed",
+      "summary": "Bug filed."
+    },
+    {
+      "at": "2026-11-20T07:05:54.772Z",
+      "role": "omer",
+      "action": "sent_to_developer",
+      "summary": "Sent to the Developer."
+    },
+    {
+      "at": "2026-11-20T07:23:01.060Z",
+      "role": "omer",
+      "action": "fixed",
+      "summary": "Fixed by the Developer."
+    }
+  ]
+}
