@@ -11,7 +11,7 @@ Nothing below has been done yet. This plan only read the repo (never `.env`).
 - **Tags today:** `@smoke` ×4, `@api` ×24, `@ui` ×6, `@hybrid` ×5, `@regression` ×30, plus one stray `@trader2`.
 - **Privacy scan** (no `/Users/…` paths, no emails, no secrets in the tree). Hits to decide on:
   1. `NOTES.md` (root): a sandbox note about "Send to workspace/sandbox" and the Hub tooling.
-  2. `work/dev/DEV-01/DEV-NOTES.md:34`: local path `~/qa-workspace/pw-live-lab`.
+  2. `work/dev/DEV-01/DEV-NOTES.md:34`: a local workspace path.
   3. `agents/framework-plan.md:3`: link to a personal `pw-live-lab` repo.
   4. Git author email is a personal Gmail address, which becomes public in every commit.
   5. `BUG-1.md` / `REVIEW.md` name "Codex" as the Reviewer. That is the AI trail, so it **stays**.
@@ -71,6 +71,6 @@ Then: `git checkout main && git merge --ff-only qa/01-parallel-safe` (main hasn'
 2. **Licence:** MIT, 2026.
 3. **Repo URL** for the badge/`package.json`: `github.com/obeydili/pw-live-lab-agents`. Is that the name?
 4. **Git author email:** commits currently use your personal Gmail, which will be public. Default: leave as is. If you'd rather use GitHub's `…@users.noreply.github.com` address, give it to me and I'll set it for step 0 (I won't rewrite history later).
-5. **`NOTES.md`** (Hub sandbox note): delete. **`~/qa-workspace/...` path** (DEV-01 DEV-NOTES) and **the personal repo link** (`agents/framework-plan.md`): reword to generic text. Both files are other roles' / yours (`agents/`), so I touch only those exact words, since the ticket says "anywhere".
+5. **`NOTES.md`** (Hub sandbox note): delete. **local workspace path** (DEV-01 DEV-NOTES) and **the personal repo link** (`agents/framework-plan.md`): reword to generic text. Both files are other roles' / yours (`agents/`), so I touch only those exact words, since the ticket says "anywhere".
 6. **`challenges/`:** keep as is, described in the README.
 7. **Merge of `qa/02-public-release` into `main`:** you, with the commands I report. Default: I stop at Reviewer Go and print them (`merge`, `remote add`, `push`).
