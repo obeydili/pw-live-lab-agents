@@ -1,0 +1,53 @@
+{
+  "schema": "orchestration/v1",
+  "id": "QA-03",
+  "type": "qa",
+  "title": "README deep-dive, Kanban / Orchestration UI (7 screenshots)",
+  "stage": "sdet",
+  "waiting": "agent",
+  "working": false,
+  "blocked": null,
+  "verdict": null,
+  "openBugs": [],
+  "rev": 3,
+  "createdAt": "2026-11-22T10:28:02.940Z",
+  "updatedAt": "2026-11-22T21:13:51.657Z",
+  "gates": {
+    "plan": {
+      "approved": true,
+      "by": "omer",
+      "at": "2026-11-22T21:13:51.657Z"
+    }
+  },
+  "history": [
+    {
+      "at": "2026-11-22T10:28:02.940Z",
+      "role": "system",
+      "action": "filed",
+      "stage": "filed",
+      "summary": "Ticket filed."
+    },
+    {
+      "at": "2026-11-22T21:07:12.664Z",
+      "role": "omer",
+      "action": "moved",
+      "stage": "sdet_plan",
+      "summary": "Started by Omer."
+    },
+    {
+      "at": "2026-11-22T21:11:04.853Z",
+      "role": "sdet",
+      "action": "done",
+      "stage": "sdet_plan",
+      "summary": "PLAN.md written, nothing changed yet: 7 renames, one README section between Tickets and The framework (full draft text in the plan), link/heading checks. 4 notes for you, e.g. first vs third person voice and the stale QA-02 row.",
+      "reportFile": "work/qa/QA-03/PLAN.md"
+    },
+    {
+      "at": "2026-11-22T21:13:51.657Z",
+      "role": "omer",
+      "action": "approved",
+      "stage": "sdet_plan",
+      "summary": ""
+    }
+  ]
+}
