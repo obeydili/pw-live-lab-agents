@@ -3,15 +3,15 @@
   "id": "QA-03",
   "type": "qa",
   "title": "README deep-dive, Kanban / Orchestration UI (7 screenshots)",
-  "stage": "sdet",
-  "waiting": "agent",
+  "stage": "review",
+  "waiting": "omer",
   "working": false,
   "blocked": null,
-  "verdict": null,
+  "verdict": "go",
   "openBugs": [],
-  "rev": 3,
+  "rev": 5,
   "createdAt": "2026-11-22T10:28:02.940Z",
-  "updatedAt": "2026-11-22T21:13:51.657Z",
+  "updatedAt": "2026-11-22T21:25:31.772Z",
   "gates": {
     "plan": {
       "approved": true,
@@ -48,6 +48,23 @@
       "action": "approved",
       "stage": "sdet_plan",
       "summary": ""
+    },
+    {
+      "at": "2026-11-22T21:16:30.472Z",
+      "role": "sdet",
+      "action": "done",
+      "stage": "sdet",
+      "summary": "Added the Kanban / Orchestration UI section to the README with 7 renamed screenshots; README +46 lines, 0 deleted, links/alt/heading order checked. typecheck clean, test-alone 54/54, npm test 54/54. GitHub rendering not proven before push.",
+      "reportFile": "work/qa/QA-03/SDET-NOTES.md"
+    },
+    {
+      "at": "2026-11-22T21:25:31.772Z",
+      "role": "reviewer",
+      "action": "done",
+      "stage": "review",
+      "summary": "Go: reviewed the README addition and all 7 screenshots; links, captions, heading order, scope and AI trailers passed. Typecheck passed, serial 54/54 and parallel 54/54 twice. No blockers; GitHub rendering awaits push.",
+      "reportFile": "work/qa/QA-03/REVIEW.md",
+      "verdict": "go"
     }
   ]
 }
